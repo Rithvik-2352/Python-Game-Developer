@@ -6,23 +6,52 @@ character.x = 400
 character.y = 550
 bullets=[]
 level=1
+rows=0
+lives=3
+enemies_to_remove=[]
+col=0
+score=0
 enemies=[]
-rows=3+level
-col=4+level
-for x in range (col):
-    for y in range (rows):
-        character_2=Actor("bee_1")
-        character_2.x=250+70*x
-        character_2.y=-50+50*y
-        enemies.append (character_2)
+character.dead=False
+def lvl ():
+    global enemies
+    global rows
+    global col
+    enemies=[]
+    if rows<7:
+        rows=1+level
+    else:
+        rows=7
+    if col<7:
+        col=4+level
+    else:
+        col=7
+    for x in range (col):
+        for y in range (rows):
+            character_2=Actor("bee_1")
+            character_2.x=250+70*x
+            character_2.y=-50+50*y
+            enemies.append (character_2)
 def draw ():
-    screen.blit("spacebackground", (0,0))
-    character.draw ()
-    for bullet in bullets:
-        bullet.draw ()
-    for enemie in enemies:
-        enemie.draw ()
+    screen.blit("space background", (0,0))
+    screen.draw.text ("Score: {}".format (score), (50,280), color=(255,255,255), fontsize=50)
+    screen.draw.text ("Lives: {}".format (lives), (50,350), color=(255,255,255), fontsize=40)
+    screen.draw.text ("Level: {}".format (level), (50,400), color=(255,255,255), fontsize=40)
+    if character.dead==False:
+        character.draw ()
+        for bullet in bullets:
+            bullet.draw ()
+        for enemie in enemies:
+            enemie.draw ()
+    else:
+        screen.blit("space background", (0,0))
+        screen.draw.text ("Score: {}".format (score), (50,280), color=(255,255,255), fontsize=50)
+        screen.draw.text ("Game Over (ship is dead)",(50,350), color=(255,255,255), fontsize=40)
 def update():
+    global level
+    global lives
+    global score
+    global enemies_to_remove
     if keyboard.a:
         if character.x>50:
             character.x-=10
@@ -36,6 +65,22 @@ def update():
             enemie.y +=1
         else:
             enemies.remove (enemie)
+        for bullet in bullets:
+            if enemie.colliderect (bullet):
+                enemies_to_remove.append (enemie)
+                bullets.remove (bullet)
+                score+=1
+        if enemie.colliderect (character):
+            enemies_to_remove.append (enemie)
+            lives-=1
+    if lives<=0:
+        character.dead=True
+    for enemie in enemies_to_remove:
+        if enemie in enemies:
+            enemies.remove (enemie)
+    if len(enemies)==0:
+        level+=1
+        lvl () 
 def on_key_down(key):
     if key==keys.SPACE:
         character_1=Actor("bullet")
