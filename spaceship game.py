@@ -21,14 +21,9 @@ def lvl ():
     global col
     enemies=[]
     enemies_to_remove=[] 
-    if rows<7:
-        rows=1+level
-    else:
-        rows=7
-    if col<7:
-        col=4+level
-    else:
-        col=7
+     # Recalculate based on current level
+    rows = min(1 + level, 7)
+    col = min(4 + level, 7)
     for x in range (col):
         for y in range (rows):
             character_2=Actor("bee_1")
@@ -69,25 +64,34 @@ def update():
             character.x+=10
     for bullet in bullets:
         bullet.y-=10
+    # Remove off-screen bullets    
+    bullets[:] = [b for b in bullets if b.y > 0]
     for enemie in enemies:
         if enemie.y<500:
             enemie.y +=1
         else:
-            enemies_to_remove.append (enemie)
-            lives-=1
+            if enemie not in enemies_to_remove:
+                enemies_to_remove.append (enemie)
+                lives-=1
         for bullet in bullets:
             if enemie.colliderect (bullet):
-                enemies_to_remove.append (enemie)
-                bullets.remove (bullet)
-                score+=1
+                if enemie not in enemies_to_remove:
+                    enemies_to_remove.append (enemie)
+                    score+=1
+                if bullet in bullets:
+                    bullets.remove (bullet)
+                
         if enemie.colliderect (character):
-            enemies_to_remove.append (enemie)
-            lives-=1
+            if enemie not in enemies_to_remove:
+                enemies_to_remove.append(enemie)
+                lives -= 1
     if lives<=0:
         character.dead=True
     for enemie in enemies_to_remove:
         if enemie in enemies:
             enemies.remove (enemie)
+    enemies_to_remove.clear()
+    
     if len(enemies)==0:
         if level>=6:
             game_won = True
