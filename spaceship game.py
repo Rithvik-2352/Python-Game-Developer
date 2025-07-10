@@ -5,19 +5,22 @@ character=Actor("fighter plane")
 character.x = 400
 character.y = 550
 bullets=[]
-level=1
+level=0
 rows=0
 lives=3
 enemies_to_remove=[]
 col=0
 score=0
+game_won = False
 enemies=[]
 character.dead=False
 def lvl ():
     global enemies
     global rows
+    global enemies_to_remove
     global col
     enemies=[]
+    enemies_to_remove=[] 
     if rows<7:
         rows=1+level
     else:
@@ -33,6 +36,7 @@ def lvl ():
             character_2.y=-50+50*y
             enemies.append (character_2)
 def draw ():
+    global level
     screen.blit("space background", (0,0))
     screen.draw.text ("Score: {}".format (score), (50,280), color=(255,255,255), fontsize=50)
     screen.draw.text ("Lives: {}".format (lives), (50,350), color=(255,255,255), fontsize=40)
@@ -47,11 +51,16 @@ def draw ():
         screen.blit("space background", (0,0))
         screen.draw.text ("Score: {}".format (score), (50,280), color=(255,255,255), fontsize=50)
         screen.draw.text ("Game Over (ship is dead)",(50,350), color=(255,255,255), fontsize=40)
+    if game_won:
+        screen.draw.text("Game Over (You Win!)", (380, 280), color=(255, 255, 255), fontsize=40)
 def update():
     global level
     global lives
     global score
     global enemies_to_remove
+    global game_won
+    if character.dead or game_won:
+        return
     if keyboard.a:
         if character.x>50:
             character.x-=10
@@ -64,7 +73,8 @@ def update():
         if enemie.y<500:
             enemie.y +=1
         else:
-            enemies.remove (enemie)
+            enemies_to_remove.append (enemie)
+            lives-=1
         for bullet in bullets:
             if enemie.colliderect (bullet):
                 enemies_to_remove.append (enemie)
@@ -79,8 +89,11 @@ def update():
         if enemie in enemies:
             enemies.remove (enemie)
     if len(enemies)==0:
-        level+=1
-        lvl () 
+        if level>=6:
+            game_won = True
+        else:    
+            level+=1
+            lvl ()  
 def on_key_down(key):
     if key==keys.SPACE:
         character_1=Actor("bullet")
